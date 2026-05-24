@@ -9,9 +9,9 @@
 ![Releases](https://img.shields.io/github/release-date/kevinkda/stock-research-skill?label=last%20release)
 
 A Cursor / Claude Code **skill pack** that orchestrates **three MCP servers**
-([`schwab-marketdata-mcp`](https://github.com/kevinkda/schwab-marketdata-mcp)
-+ [`sec-edgar-mcp`](https://github.com/kevinkda/sec-edgar-mcp)
-+ [`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp)) into
+— [`schwab-marketdata-mcp`](https://github.com/kevinkda/schwab-marketdata-mcp),
+[`sec-edgar-mcp`](https://github.com/kevinkda/sec-edgar-mcp), and
+[`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp) — into
 multi-step equity-research playbooks for the
 [`kevinkda/stock-personal`](https://github.com/kevinkda/stock-personal)
 investment workflow.

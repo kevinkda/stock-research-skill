@@ -9,9 +9,9 @@
 ![Releases](https://img.shields.io/github/release-date/kevinkda/stock-research-skill?label=last%20release)
 
 一个 Cursor / Claude Code **skill 包**，将 **3 个 MCP server** 编排成多步
-研究 playbook：[`schwab-marketdata-mcp`](https://github.com/kevinkda/schwab-marketdata-mcp)
-+ [`sec-edgar-mcp`](https://github.com/kevinkda/sec-edgar-mcp)
-+ [`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp)，
+研究 playbook —— [`schwab-marketdata-mcp`](https://github.com/kevinkda/schwab-marketdata-mcp)、
+[`sec-edgar-mcp`](https://github.com/kevinkda/sec-edgar-mcp)、
+[`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp) ——
 服务 [`kevinkda/stock-personal`](https://github.com/kevinkda/stock-personal)
 投研工作流。
 

@@ -158,8 +158,8 @@ Write the following 8 sections to
    - Anomaly score breakdown (from Step 3).
    - Schwab quote vs insider price (from Step 4).
    - Class verdict (from Step 6).
-5. **Top 5 news citations per triggered ticker** (title + url + publisher
-   + ts only).
+5. **Top 5 news citations per triggered ticker** (title, url, publisher,
+   timestamp only).
 6. **Limitations notice**: 14-day window covers only filed Form 4
    transactions; Form 4 has a 2-business-day filing delay; this scan
    **does not replace** Section 16 compliance audit.
