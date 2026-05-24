@@ -1,0 +1,21 @@
+# Skill-repo gitignore — this is a Markdown-only repo; no build artifacts.
+
+# Editor / OS detritus
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Local notes / scratch
+scratch/
+notes.md
+*.draft.md
+
+# Anything that looks like a real upstream API response we may have
+# inadvertently saved while authoring docs. Skill documentation should
+# NEVER include real Schwab Market Data, Polygon news, or SEC filing
+# payloads — those belong in a private workspace, not this public skill
+# repo.
+*.real.json
+recorded-fixtures/
