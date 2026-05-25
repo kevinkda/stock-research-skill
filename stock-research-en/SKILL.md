@@ -45,6 +45,15 @@ If only a single MCP server is needed, prefer the per-server skill:
    and `server_version` satisfies `>=0.3,<0.4`.
 2. Call `sec-edgar-mcp.health_check()`; verify `user_agent_configured` and
    `server_version` satisfies `>=0.2,<0.3`.
+2.5. Verify the sec-edgar User-Agent is a real reachable email (**not**
+   noreply). Read the `user_agent` field returned by `health_check()`;
+   if it contains the substring `users.noreply.github.com` or is empty
+   → STOP and tell the user to change `SEC_EDGAR_USER_AGENT` in
+   `sec-edgar-mcp/.env` to a real reachable email (required by SEC
+   fair-use policy; `user_agent_configured=true` only checks that the
+   local env var is non-empty, not whether SEC actually accepts it.
+   Discovered 2026-05-25 during PB-3 validation when a noreply email
+   triggered SEC 403 deny; tracked as R7).
 3. Call `polygon-news-mcp.health_check()`; verify `api_key_configured` and
    `server_version` satisfies `>=0.2,<0.3`.
 4. Run `git -C $required_workspace remote get-url origin` and confirm it
