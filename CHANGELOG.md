@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- SKILL.md handshake step 2.5 upgraded from string-blacklist to
+  server-side probe (R7 third layer). Step 2.5 now reads the
+  `sec_ua_reachable.status` field exposed by `sec-edgar-mcp v0.2.1+`
+  (currently HEAD on main pre-release) and gates on `ACCEPTED` /
+  `REJECTED_HTML_403` / `UNCONFIGURED` / `TIMEOUT` / `NETWORK_ERROR`,
+  rather than substring-matching `users.noreply.github.com` on the
+  raw UA. Server-side probe is authoritative — it catches "email is
+  well-formed but SEC IP deny-listed it" cases that no client-side
+  string check can detect. Updated in both zh and en SKILL.md.
+
 ### Fixed
 
 - SKILL.md handshake step 2.5: block noreply UA (R7). SEC EDGAR
