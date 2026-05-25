@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-05-25
+
 ### Changed
 
 - SKILL.md handshake step 2.5 upgraded from string-blacklist to
@@ -18,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   raw UA. Server-side probe is authoritative — it catches "email is
   well-formed but SEC IP deny-listed it" cases that no client-side
   string check can detect. Updated in both zh and en SKILL.md.
+- Bumped `sec-edgar-mcp` `version_range` to `>=0.2.1,<0.3` to enforce
+  the server-side probe field availability at handshake time.
 
 ### Fixed
 
@@ -61,5 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Falling back to lower minor versions will fail the Activation
   handshake.
 
-[Unreleased]: https://github.com/kevinkda/stock-research-skill/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kevinkda/stock-research-skill/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kevinkda/stock-research-skill/releases/tag/v0.2.0
 [0.1.0]: https://github.com/kevinkda/stock-research-skill/releases/tag/v0.1.0

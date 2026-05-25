@@ -6,7 +6,7 @@ mcp_dependencies:
   - name: schwab-marketdata-mcp
     version_range: ">=0.3,<0.4"
   - name: sec-edgar-mcp
-    version_range: ">=0.2,<0.3"
+    version_range: ">=0.2.1,<0.3"
   - name: polygon-news-mcp
     version_range: ">=0.2,<0.3"
 description: |
