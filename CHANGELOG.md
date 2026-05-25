@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- SKILL.md handshake step 2.5: block noreply UA (R7). SEC EDGAR
+  fair-use policy returns 403 for User-Agent emails ending in
+  `users.noreply.github.com` (treated as undeclared automated tool).
+  Activation handshake now STOPs early instead of letting PB-3 fail
+  mid-execution. Discovered during 2026-05-25 PB-3 validation; root
+  cause: `health_check` `user_agent_configured=true` only checks
+  local env presence, not SEC-side acceptance.
+
 ## [0.1.0] - 2026-05-24
 
 ### Added
