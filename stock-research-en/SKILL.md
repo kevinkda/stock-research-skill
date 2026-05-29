@@ -4,7 +4,7 @@ language_directive: "Always respond to the user in English."
 required_workspace: "/opt/workspace/code/kevinkda/stock-personal"
 mcp_dependencies:
   - name: schwab-marketdata-mcp
-    version_range: ">=0.3,<0.4"
+    version_range: ">=0.4,<0.5"
   - name: sec-edgar-mcp
     version_range: ">=0.2.1,<0.3"
   - name: polygon-news-mcp
@@ -15,7 +15,8 @@ description: |
   kevinkda/stock-personal investment workflow.
 
   Triggers on "shakeout with news", "insider alert", "shakeout 配新闻",
-  "内部人交易告警", "shakeout-with-news", "insider-alert".
+  "内部人交易告警", "shakeout-with-news", "insider-alert",
+  "earnings preview", "财报前瞻".
 
   Use this skill for the scenarios above; respond to the user in English.
 ---
@@ -33,6 +34,7 @@ multiple data sources**:
 
 - Shakeout signal + news sentiment overlay → `shakeout-with-news` playbook
 - Insider trading anomaly alert → `insider-alert` playbook
+- Earnings preview (IV-rank-aware positioning brief) → `earnings-preview` playbook
 
 If only a single MCP server is needed, prefer the per-server skill:
 
@@ -42,7 +44,7 @@ If only a single MCP server is needed, prefer the per-server skill:
 ## Activation handshake (mandatory)
 
 1. Call `schwab-marketdata-mcp.health_check()`; verify `overall_status == "healthy"`
-   and `server_version` satisfies `>=0.3,<0.4`.
+   and `server_version` satisfies `>=0.4,<0.5`.
 2. Call `sec-edgar-mcp.health_check()`; verify `user_agent_configured` and
    `server_version` satisfies `>=0.2,<0.3`.
 2.5. Verify the sec-edgar server-side UA reachability. Read the
@@ -81,6 +83,7 @@ If only a single MCP server is needed, prefer the per-server skill:
 | --- | --- | --- |
 | "shakeout with news" / "news after a shakeout trigger" | `playbooks/shakeout-with-news.md` | schwab(price_history) + polygon(sentiment_aggregate, ticker_news) |
 | "insider alert" / "scan watchlist for insider trades" | `playbooks/insider-alert.md` | sec-edgar(form4) + polygon(news) + schwab(quote) |
+| "earnings preview" / "earnings positioning" / "what to watch this earnings" | `playbooks/earnings-preview.md` | schwab(get_iv_percentile, get_price_history) + sec-edgar(get_8k_with_items) + polygon(get_news_sentiment_aggregate) |
 
 ## Idempotency
 
@@ -88,6 +91,7 @@ If only a single MCP server is needed, prefer the per-server skill:
 | --- | --- | --- |
 | shakeout-with-news | At most once per day (cache hit_rate ≥ 30% gate) | Writes `research/shakeout-news-YYYY-MM-DD.md`; one new file per day |
 | insider-alert | At most once per week | Writes `research/insider-alert-YYYY-MM-DD.md` |
+| earnings-preview | At most once per ticker per day (cache hit_rate ≥ 30% gate) | Writes `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`; isolated by ticker + date |
 
 ## Universal constraints
 
