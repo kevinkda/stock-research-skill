@@ -44,6 +44,14 @@
 6. cwd ∈ ${target_repo} subtree? If not → read-only mode (chat output only)
 ```
 
+> **schwab cache is now opt-in (disabled by default)**: when not explicitly
+> enabled `get_cache_stats()` returns `enabled == false` and `hit_rate_24h`
+> stays 0. To route this run through the cache and relieve Schwab quota,
+> `export SCHWAB_CACHE_ENABLED=true` (also accepts `1` / `yes` / `on`) before
+> launching the MCP. Without it the playbook still completes normally
+> (IV/price all live); the cache gate in idempotency below is **only active
+> when `SCHWAB_CACHE_ENABLED=true`**.
+
 ## Steps
 
 ### Step 1 — Preview watchlist and pick the ticker
@@ -301,13 +309,13 @@ git push origin <branch>   # NOT --force
 | Activation handshake fails any step | **STOP**, do not retry; tell the user which step failed and how to fix it. |
 | After generation `wc -l > 300` | Auto-truncate §4 prose paragraphs (keep the table); append `> ⚠️ Report truncated to fit 300-line limit; full data in commit metadata.` at the bottom. |
 | Ticker is not in the watchlist | **Accept**, frontmatter `coverage: ad-hoc`; do not STOP (ad-hoc lookup is a legitimate use case). |
-| schwab cache `hit_rate < 0.3` (stale ≥ 24 h) | WARN, do not STOP; frontmatter `cache_freshness: stale`; suggest re-running with `refresh=True` next time (mind quota). |
+| schwab cache `hit_rate < 0.3` (stale ≥ 24 h, only when `SCHWAB_CACHE_ENABLED=true`) | WARN, do not STOP; frontmatter `cache_freshness: stale`; suggest re-running with `refresh=True` next time (mind quota). Not applicable when cache is disabled (the default). |
 
 ## Idempotency
 
 | Repeat run | Side effects |
 | --- | --- |
-| Same ticker, same day, ≤ 1 run (cache hit_rate ≥ 30 % gate) | Writes `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`; if the same-name file exists, ask whether to overwrite (default skip). |
+| Same ticker, same day, ≤ 1 run (cache hit_rate ≥ 30 % gate applies only when cache enabled; no gate when cache disabled) | Writes `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`; if the same-name file exists, ask whether to overwrite (default skip). |
 | Same ticker, different day | One new file per day; the filename's ticker + date give natural isolation. |
 
 ## See also

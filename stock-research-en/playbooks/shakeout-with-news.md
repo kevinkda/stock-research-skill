@@ -30,6 +30,20 @@
    otherwise STOP and report "shakeout model source missing".
 ```
 
+> **schwab cache is now opt-in (disabled by default)**: after the cache
+> default-disabled change in `schwab-marketdata-mcp`, when not explicitly
+> enabled `get_cache_stats()` returns `enabled == false` and `hit_rate_24h`
+> stays 0. To route this run through the DuckDB cache and relieve Schwab
+> quota, export the flag before launching the MCP:
+>
+> ```bash
+> export SCHWAB_CACHE_ENABLED=true   # also accepts 1 / yes / on
+> ```
+>
+> Without it this playbook still completes normally (all calls hit the
+> Schwab live API); the "cache hit rate" Acceptance item below is
+> **only checked when `SCHWAB_CACHE_ENABLED=true`**.
+
 ## Steps
 
 ### Step 1 — Pick the universe
@@ -142,9 +156,11 @@ then tick):
       `git -C ${target_repo} diff --stat HEAD~1` lives under `research/`.
 - [ ] **All 3 health_checks were valid**: pre-flight transcript captured
       in chat context.
-- [ ] **Schwab cache hit rate ≥ 30%**: end-of-playbook
-      `schwab-marketdata-mcp.get_cache_stats()` returns
-      `hit_rate_24h ≥ 0.3`.
+- [ ] **Schwab cache hit rate ≥ 30% (only checked when `SCHWAB_CACHE_ENABLED=true`)**:
+      end-of-playbook `schwab-marketdata-mcp.get_cache_stats()`.
+      - If `enabled == false` (cache disabled, the default) → **skip this item**,
+        mark `cache: disabled` in frontmatter; not a failure.
+      - If `enabled == true` → verify `hit_rate_24h ≥ 0.3`.
 - [ ] **Report contains all 8 sections**:
       `grep -c '^##' ${target_repo}/research/shakeout-news-$(date +%Y-%m-%d).md`
       is ≥ 8.

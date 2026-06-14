@@ -30,6 +30,18 @@
    否则 STOP 并报告 "shakeout 模型来源缺失"。
 ```
 
+> **schwab 缓存现为 opt-in（默认禁用）**：`schwab-marketdata-mcp` 自 cache
+> 默认禁用改动后，未显式启用时 `get_cache_stats()` 会返回 `enabled == false`，
+> 且 `hit_rate_24h` 恒为 0。若希望本次走 DuckDB 缓存以减压 Schwab 配额，
+> 在启动 MCP 前先：
+>
+> ```bash
+> export SCHWAB_CACHE_ENABLED=true   # 也接受 1 / yes / on
+> ```
+>
+> 不启用时本 playbook 仍可正常完成（全部走 Schwab 实时 API）；下方
+> Acceptance 的"缓存命中率"一项**仅在 `SCHWAB_CACHE_ENABLED=true` 时校验**。
+
 ## Steps
 
 ### Step 1 — 选取分析标的
@@ -137,8 +149,11 @@ git commit -m "research(cross-mcp): shakeout-with-news $(date -u +%Y-%m-%d)"
       `git -C ${target_repo} diff --stat HEAD~1` 列出的所有文件路径都在
       `research/` 目录下
 - [ ] **3 个 health_check 当时均 valid**：pre-flight 输出留底（聊天上下文）
-- [ ] **schwab 缓存命中率 ≥ 30%**：playbook 末尾再调一次
-      `schwab-marketdata-mcp.get_cache_stats()`，`hit_rate_24h ≥ 0.3`
+- [ ] **schwab 缓存命中率 ≥ 30%（仅当 `SCHWAB_CACHE_ENABLED=true` 时校验）**：
+      playbook 末尾再调一次 `schwab-marketdata-mcp.get_cache_stats()`。
+      - 若 `enabled == false`（缓存未启用，默认）→ **跳过本项**，在 frontmatter
+        标 `cache: disabled`；不视为失败。
+      - 若 `enabled == true` → 校验 `hit_rate_24h ≥ 0.3`。
 - [ ] **报告含全部 8 段**：
       `grep -c '^##' ${target_repo}/research/shakeout-news-$(date +%Y-%m-%d).md` ≥ 8
 - [ ] **无来自 §10 的逐字复制**：随机抽 1 段 §10 原文，

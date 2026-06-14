@@ -40,6 +40,13 @@
 6. cwd ∈ ${target_repo} subtree？若否 → 只读模式（仅输出到聊天）
 ```
 
+> **schwab 缓存现为 opt-in（默认禁用）**：未显式启用时 `get_cache_stats()`
+> 返回 `enabled == false` 且 `hit_rate_24h` 恒为 0。若希望走缓存以减压
+> Schwab 配额，在启动 MCP 前先 `export SCHWAB_CACHE_ENABLED=true`
+> （也接受 `1` / `yes` / `on`）。不启用时本 playbook 仍可正常完成
+> （IV/价格全走实时 API）；下方 idempotency 的 cache gate **仅在
+> `SCHWAB_CACHE_ENABLED=true` 时生效**。
+
 ## Steps
 
 ### Step 1 — 预读 watchlist 并选取 ticker
@@ -272,13 +279,13 @@ git push origin <branch>   # 不 --force
 | Activation handshake 任一步失败 | **STOP**，不重试；提示用户具体哪一步失败 + 修复方法 |
 | 报告生成后 `wc -l > 300` | 自动截断 §4 文字段落（保留表格），底部加 `> ⚠️ Report truncated to fit 300-line limit; full data in commit metadata.` |
 | ticker 不在 watchlist | **接受**，frontmatter 标 `coverage: ad-hoc`；不 STOP（人工 ad-hoc 查询合法用例） |
-| schwab cache hit_rate < 0.3（陈旧 ≥ 24h） | WARN 不 STOP；frontmatter 标 `cache_freshness: stale`；建议下次跑 `refresh=True`（注意 quota） |
+| schwab cache hit_rate < 0.3（陈旧 ≥ 24h，仅 `SCHWAB_CACHE_ENABLED=true` 时适用） | WARN 不 STOP；frontmatter 标 `cache_freshness: stale`；建议下次跑 `refresh=True`（注意 quota）。缓存未启用（默认）时本项不适用 |
 
 ## Idempotency
 
 | 重复运行 | 副作用 |
 | --- | --- |
-| 同 ticker 同日重跑 ≤ 1 次（cache hit_rate ≥ 30% gate） | 写 `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`；同名文件存在时询问是否覆盖（默认 skip） |
+| 同 ticker 同日重跑 ≤ 1 次（启用缓存时受 hit_rate ≥ 30% gate 约束；缓存禁用时无 gate） | 写 `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`；同名文件存在时询问是否覆盖（默认 skip） |
 | 同 ticker 不同日 | 每日新文件；文件名带 ticker + date，天然隔离 |
 
 ## See also

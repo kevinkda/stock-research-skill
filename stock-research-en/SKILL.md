@@ -89,9 +89,9 @@ If only a single MCP server is needed, prefer the per-server skill:
 
 | Playbook | Repeat run | Side effects |
 | --- | --- | --- |
-| shakeout-with-news | At most once per day (cache hit_rate ≥ 30% gate) | Writes `research/shakeout-news-YYYY-MM-DD.md`; one new file per day |
+| shakeout-with-news | At most once per day (cache hit_rate ≥ 30% gate applies only when cache enabled; cache is default-disabled, requires `export SCHWAB_CACHE_ENABLED=true`) | Writes `research/shakeout-news-YYYY-MM-DD.md`; one new file per day |
 | insider-alert | At most once per week | Writes `research/insider-alert-YYYY-MM-DD.md` |
-| earnings-preview | At most once per ticker per day (cache hit_rate ≥ 30% gate) | Writes `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`; isolated by ticker + date |
+| earnings-preview | At most once per ticker per day (cache hit_rate ≥ 30% gate applies only when cache enabled; cache is default-disabled, requires `export SCHWAB_CACHE_ENABLED=true`) | Writes `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`; isolated by ticker + date |
 
 ## Universal constraints
 
