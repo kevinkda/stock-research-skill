@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-15
+
+### Changed
+
+- **Playbook cache-gate is now conditional on `SCHWAB_CACHE_ENABLED`**
+  (`shakeout-with-news`, `earnings-preview`, zh + en). Following the
+  `schwab-marketdata-mcp` change that makes the DuckDB cache opt-in
+  (default-disabled), the previously hard "cache hit_rate ≥ 30%"
+  acceptance criteria would have failed every run. Each affected
+  playbook now: (1) documents the `export SCHWAB_CACHE_ENABLED=true`
+  opt-in in its pre-flight prelude, and (2) only verifies the hit-rate
+  gate when the cache is actually enabled — otherwise the item is
+  skipped and the report frontmatter is marked `cache: disabled`.
+  `SKILL.md` idempotency table wording synced accordingly. Docs-only,
+  user-facing behavior clarification.
+
 ## [0.3.0] - 2026-05-29
 
 ### Added
