@@ -6,17 +6,20 @@ mcp_dependencies:
   - name: schwab-marketdata-mcp
     version_range: ">=0.4,<0.5"
   - name: sec-edgar-mcp
-    version_range: ">=0.2.1,<0.3"
+    version_range: ">=0.4,<0.5"
   - name: polygon-news-mcp
     version_range: ">=0.2,<0.3"
+  - name: clickhouse-mcp
+    version_range: ">=0.1,<0.2"
 description: |
   Cross-MCP equity research skill that orchestrates schwab-marketdata-mcp +
-  sec-edgar-mcp + polygon-news-mcp into multi-step playbooks for the
-  kevinkda/stock-personal investment workflow.
+  sec-edgar-mcp + polygon-news-mcp + clickhouse-mcp into multi-step playbooks
+  for the kevinkda/stock-personal investment workflow.
 
   Triggers on "shakeout with news", "insider alert", "shakeout 配新闻",
   "内部人交易告警", "shakeout-with-news", "insider-alert",
-  "earnings preview", "财报前瞻".
+  "earnings preview", "财报前瞻", "factor screen", "因子筛选",
+  "全市场扫描", "correlation pairs", "相关性配对", "配对交易".
 
   Use this skill for the scenarios above; respond to the user in English.
 ---
@@ -24,8 +27,8 @@ description: |
 # stock-research-en (English mirror)
 
 Cross-MCP equity research skill that chains schwab-marketdata-mcp +
-sec-edgar-mcp + polygon-news-mcp into multi-step playbooks for the
-kevinkda/stock-personal investment workflow.
+sec-edgar-mcp + polygon-news-mcp + clickhouse-mcp into multi-step playbooks for
+the kevinkda/stock-personal investment workflow.
 
 ## When to use this skill
 
@@ -35,6 +38,8 @@ multiple data sources**:
 - Shakeout signal + news sentiment overlay → `shakeout-with-news` playbook
 - Insider trading anomaly alert → `insider-alert` playbook
 - Earnings preview (IV-rank-aware positioning brief) → `earnings-preview` playbook
+- Full-market factor screen + multi-source deep research → `factor-screen-deep-dive` playbook
+- Correlation pairs monitor (pairs-trading candidates) → `correlation-pairs-monitor` playbook
 
 If only a single MCP server is needed, prefer the per-server skill:
 
@@ -46,7 +51,8 @@ If only a single MCP server is needed, prefer the per-server skill:
 1. Call `schwab-marketdata-mcp.health_check()`; verify `overall_status == "healthy"`
    and `server_version` satisfies `>=0.4,<0.5`.
 2. Call `sec-edgar-mcp.health_check()`; verify `user_agent_configured` and
-   `server_version` satisfies `>=0.2,<0.3`.
+   `server_version` satisfies `>=0.4,<0.5` (factor-screen-deep-dive uses
+   `get_institutional_holders`, which needs sec-edgar v0.4.0+).
 2.5. Verify the sec-edgar server-side UA reachability. Read the
    `sec_ua_reachable.status` field returned by `health_check()` (v0.2.0+,
    third layer of the R7 three-layer defence):
@@ -71,11 +77,28 @@ If only a single MCP server is needed, prefer the per-server skill:
    PB-3 validation).
 3. Call `polygon-news-mcp.health_check()`; verify `api_key_configured` and
    `server_version` satisfies `>=0.2,<0.3`.
+3.5. Call `clickhouse-mcp.health_check()` (mandatory for the quant playbooks;
+   skippable for the non-quant playbooks); verify:
+   - `overall_status == "ok"` and `connection_configured == true` and
+     `clickhouse_reachable == true` and `read_only == true` and `server_version`
+     satisfies `>=0.1,<0.2`.
+   - **clickhouse degrade convention**: if `overall_status == "unhealthy"` or
+     `connection_configured == false` (CH has no read-only account or is
+     unreachable) → **do not block**: the quant playbooks take the degraded
+     branch (factor-screen switches to manual candidates; correlation-pairs
+     emits read-only advice only), and the report frontmatter is marked
+     `clickhouse: unavailable`. **CH unavailability NEVER blocks the parts that
+     use the existing 3 MCP servers.**
+   - **clickhouse-mcp read-only account**: needs `CLICKHOUSE_MCP_HOST` /
+     `CLICKHOUSE_MCP_USER` (point at a USA-side `readonly=1` + `GRANT SELECT`
+     dedicated account) / `CLICKHOUSE_MCP_PASSWORD`; credentials are read from
+     env only, never logged or repr'd.
 4. Run `git -C $required_workspace remote get-url origin` and confirm it
    points to `kevinkda/stock-personal`.
 5. Run `gh repo view kevinkda/stock-personal --json isPrivate -q .isPrivate`
    and confirm the result is `true`.
-6. If any check fails — STOP immediately and report to the user.
+6. If any check fails — STOP immediately and report to the user (except
+   clickhouse unavailability: the quant playbooks degrade, do not stop).
 
 ## Playbook selection table
 
@@ -84,6 +107,8 @@ If only a single MCP server is needed, prefer the per-server skill:
 | "shakeout with news" / "news after a shakeout trigger" | `playbooks/shakeout-with-news.md` | schwab(price_history) + polygon(sentiment_aggregate, ticker_news) |
 | "insider alert" / "scan watchlist for insider trades" | `playbooks/insider-alert.md` | sec-edgar(form4) + polygon(news) + schwab(quote) |
 | "earnings preview" / "earnings positioning" / "what to watch this earnings" | `playbooks/earnings-preview.md` | schwab(get_iv_percentile, get_price_history) + sec-edgar(get_8k_with_items) + polygon(get_news_sentiment_aggregate) |
+| "factor screen" / "full-market scan" / "cross-sectional factor screen + deep research" | `playbooks/factor-screen-deep-dive.md` | clickhouse(screen_stocks) + schwab(get_quote) + sec-edgar(get_institutional_holders) + polygon(get_news_sentiment_aggregate) |
+| "correlation pairs" / "pairs trading" / "correlation matrix monitor" | `playbooks/correlation-pairs-monitor.md` | clickhouse(get_correlation_matrix, get_ohlcv) + schwab(get_quote) + polygon(get_news_sentiment_aggregate) |
 
 ## Idempotency
 
@@ -92,6 +117,8 @@ If only a single MCP server is needed, prefer the per-server skill:
 | shakeout-with-news | At most once per day (cache hit_rate ≥ 30% gate applies only when cache enabled; cache is default-disabled, requires `export SCHWAB_CACHE_ENABLED=true`) | Writes `research/shakeout-news-YYYY-MM-DD.md`; one new file per day |
 | insider-alert | At most once per week | Writes `research/insider-alert-YYYY-MM-DD.md` |
 | earnings-preview | At most once per ticker per day (cache hit_rate ≥ 30% gate applies only when cache enabled; cache is default-disabled, requires `export SCHWAB_CACHE_ENABLED=true`) | Writes `research/earnings-preview-{TICKER}-YYYY-MM-DD.md`; isolated by ticker + date |
+| factor-screen-deep-dive | At most once per day | Writes `research/factor-screen-YYYY-MM-DD.md`; one new file per day; on CH-unavailable degrade still writes (candidates user-specified), frontmatter marked `clickhouse: unavailable` |
+| correlation-pairs-monitor | At most once per day | Writes `research/correlation-pairs-YYYY-MM-DD.md`; one new file per day; on CH-unavailable only writes if the user accepts "no correlation matrix" |
 
 ## Universal constraints
 
@@ -108,7 +135,9 @@ If only a single MCP server is needed, prefer the per-server skill:
 - Companion MCP servers:
   [schwab-marketdata-mcp](https://github.com/kevinkda/schwab-marketdata-mcp) +
   [sec-edgar-mcp](https://github.com/kevinkda/sec-edgar-mcp) +
-  [polygon-news-mcp](https://github.com/kevinkda/polygon-news-mcp).
+  [polygon-news-mcp](https://github.com/kevinkda/polygon-news-mcp) +
+  [clickhouse-mcp](https://github.com/kevinkda/clickhouse-mcp) (quant: 1.49B-row
+  history + L2 materialised indicators).
 - Per-server skills:
   [schwab-marketdata-skill](https://github.com/kevinkda/schwab-marketdata-skill)
   (ships shakeout-analysis-v2 / voo-qqq-tracker / watchlist-snapshot /

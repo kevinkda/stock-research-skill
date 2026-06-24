@@ -8,14 +8,15 @@
 ![Release](https://img.shields.io/github/v/release/kevinkda/stock-research-skill)
 ![Releases](https://img.shields.io/github/release-date/kevinkda/stock-research-skill?label=last%20release)
 
-一个 Cursor / Claude Code **skill 包**，将 **3 个 MCP server** 编排成多步
+一个 Cursor / Claude Code **skill 包**，将 **4 个 MCP server** 编排成多步
 研究 playbook —— [`schwab-marketdata-mcp`](https://github.com/kevinkda/schwab-marketdata-mcp)、
 [`sec-edgar-mcp`](https://github.com/kevinkda/sec-edgar-mcp)、
-[`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp) ——
+[`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp)、
+[`clickhouse-mcp`](https://github.com/kevinkda/clickhouse-mcp) ——
 服务 [`kevinkda/stock-personal`](https://github.com/kevinkda/stock-personal)
 投研工作流。
 
-本 skill 是**只读文档**；真正的 API 流量由上述 3 个 MCP server 各自承担。
+本 skill 是**只读文档**；真正的 API 流量由上述 4 个 MCP server 各自承担。
 
 ---
 
@@ -57,6 +58,7 @@
 | 本 skill 仓 | 兼容的 MCP server |
 | --- | --- |
 | `v0.1.x` | `schwab-marketdata-mcp >=0.3,<0.4` + `sec-edgar-mcp >=0.2,<0.3` + `polygon-news-mcp >=0.2,<0.3` |
+| `v0.4.x` | `schwab-marketdata-mcp >=0.4,<0.5` + `sec-edgar-mcp >=0.4,<0.5` + `polygon-news-mcp >=0.2,<0.3` + `clickhouse-mcp >=0.1,<0.2` |
 
 版本范围编码在每份 `SKILL.md` 的 `mcp_dependencies` frontmatter。
 Activation handshake 会逐一调用 `health_check()`，任一 `server_version`
@@ -117,6 +119,9 @@ MIT License —— 见 [LICENSE](./LICENSE)。
   只读 SEC EDGAR MCP server（filings / Form 4 / Form 13F XBRL）。
 - **[polygon-news-mcp](https://github.com/kevinkda/polygon-news-mcp)** ——
   只读 Polygon 新闻 MCP server（ticker_news、sentiment_aggregate）。
+- **[clickhouse-mcp](https://github.com/kevinkda/clickhouse-mcp)** ——
+  只读 ClickHouse MCP server（7 个工具，覆盖 14.9 亿行 USA 行情仓：OHLCV、
+  物化指标、全市场筛选、相关性矩阵）；驱动跨 MCP 量化 playbook。
 
 skill markdown 设计模式参考 [`schwab-marketdata-skill`](https://github.com/kevinkda/schwab-marketdata-skill)
 配套仓和 Anthropic 公开的 skill pack。

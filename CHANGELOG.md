@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-24
+
+### Added
+
+- **`factor-screen-deep-dive` playbook** (zh + en, 7-step + 8 AC + rollback +
+  15 failure modes, `playbooks/factor-screen-deep-dive.md`): the first
+  **cross-MCP quant playbook** orchestrating the new `clickhouse-mcp`
+  (1.49B-row history) with the existing 3 MCP servers. Runs a full-market
+  cross-sectional factor scan via clickhouse `screen_stocks` (e.g.
+  RSI<30 ∩ MACD-hist>0 across the 1388-symbol universe), converges to top-N
+  candidates, then deep-researches each across schwab `get_quote` (live price),
+  sec-edgar `get_institutional_holders` (13F holder reverse-lookup), and
+  polygon `get_news_sentiment_aggregate` (7-day sentiment). Writes a candidate
+  list + per-candidate multi-source brief to `research/factor-screen-YYYY-MM-DD.md`.
+  All conclusions are **draft signals**, not trade orders.
+- **`correlation-pairs-monitor` playbook** (zh + en, 7-step + 8 AC + rollback +
+  14 failure modes, `playbooks/correlation-pairs-monitor.md`): the second
+  cross-MCP quant playbook. Uses clickhouse `get_correlation_matrix` over a
+  watchlist (daily-return Pearson/Spearman) to find high-corr pairs (|corr| ≥
+  0.8), computes spread Z-score + half-life from clickhouse `get_ohlcv`,
+  recalibrates the live spread via schwab `get_quote`, and verifies fundamental
+  divergence via polygon `get_news_sentiment_aggregate` per leg. Writes
+  pairs-trading candidates to `research/correlation-pairs-YYYY-MM-DD.md`. Zero
+  order surface; signals only.
+- **clickhouse health_check in the activation handshake** (zh + en SKILL.md,
+  step 3.5): validates `overall_status == "ok"` + `connection_configured` +
+  `clickhouse_reachable` + `read_only` + `server_version ∈ >=0.1,<0.2`.
+  **Graceful degrade**: when CH is unavailable (no read-only account or
+  unreachable) the quant playbooks degrade (factor-screen → manual candidates;
+  correlation-pairs → read-only advice) and mark `clickhouse: unavailable` —
+  **CH unavailability never blocks the parts using the existing 3 MCP servers.**
+- **SKILL.md (zh + en)**: `playbooks` selection table now includes
+  `factor-screen-deep-dive` + `correlation-pairs-monitor` rows; the trigger
+  keywords list covers `"factor screen"` / `"因子筛选"` / `"全市场扫描"` /
+  `"correlation pairs"` / `"相关性配对"` / `"配对交易"`. Idempotency table adds
+  both new playbook rows.
+
+### Changed
+
+- **`mcp_dependencies` adds `clickhouse-mcp` (`version_range >=0.1,<0.2`)** in
+  both SKILL.md variants — the skill now orchestrates **4 MCP servers**.
+- `sec-edgar-mcp` `version_range` bumped from `>=0.2.1,<0.3` to `>=0.4,<0.5`.
+  The `factor-screen-deep-dive` playbook depends on `get_institutional_holders`
+  (13F holder reverse-lookup), shipped in `sec-edgar-mcp v0.4.0`, which is not
+  present in the `0.2.x` line. Activation handshake step 2 now requires the
+  `0.4.x` server. (`get_8k_with_items` / `get_form4_insider_trades` used by the
+  existing playbooks remain available in `0.4.x`.)
+- README + README_zh updated: skill count badge note, MCP-server list now
+  includes clickhouse-mcp, compatibility table adds the `v0.4.x` row.
+
+### Compatibility
+
+- Requires `schwab-marketdata-mcp >=0.4,<0.5` +
+  `sec-edgar-mcp >=0.4,<0.5` +
+  `polygon-news-mcp >=0.2,<0.3` +
+  `clickhouse-mcp >=0.1,<0.2`.
+- The 2 new quant playbooks require `clickhouse-mcp` for the CH-backed steps;
+  without a configured CH read-only account they **degrade gracefully** rather
+  than fail. The 3 existing playbooks (`shakeout-with-news` / `insider-alert` /
+  `earnings-preview`) do **not** depend on clickhouse-mcp.
+- Older `sec-edgar-mcp 0.2.x/0.3.x` users will fail the Activation handshake —
+  `get_institutional_holders` is unavailable, so `factor-screen-deep-dive`
+  cannot run.
+
 ## [0.3.1] - 2026-06-15
 
 ### Changed
@@ -126,7 +190,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Falling back to lower minor versions will fail the Activation
   handshake.
 
-[Unreleased]: https://github.com/kevinkda/stock-research-skill/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/kevinkda/stock-research-skill/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/kevinkda/stock-research-skill/releases/tag/v0.4.0
 [0.3.0]: https://github.com/kevinkda/stock-research-skill/releases/tag/v0.3.0
 [0.2.0]: https://github.com/kevinkda/stock-research-skill/releases/tag/v0.2.0
 [0.1.0]: https://github.com/kevinkda/stock-research-skill/releases/tag/v0.1.0

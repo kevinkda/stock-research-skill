@@ -8,16 +8,17 @@
 ![Release](https://img.shields.io/github/v/release/kevinkda/stock-research-skill)
 ![Releases](https://img.shields.io/github/release-date/kevinkda/stock-research-skill?label=last%20release)
 
-A Cursor / Claude Code **skill pack** that orchestrates **three MCP servers**
+A Cursor / Claude Code **skill pack** that orchestrates **four MCP servers**
 — [`schwab-marketdata-mcp`](https://github.com/kevinkda/schwab-marketdata-mcp),
-[`sec-edgar-mcp`](https://github.com/kevinkda/sec-edgar-mcp), and
-[`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp) — into
+[`sec-edgar-mcp`](https://github.com/kevinkda/sec-edgar-mcp),
+[`polygon-news-mcp`](https://github.com/kevinkda/polygon-news-mcp), and
+[`clickhouse-mcp`](https://github.com/kevinkda/clickhouse-mcp) — into
 multi-step equity-research playbooks for the
 [`kevinkda/stock-personal`](https://github.com/kevinkda/stock-personal)
 investment workflow.
 
 This skill is **read-only documentation**; the actual API traffic is owned
-by the three MCP servers above.
+by the four MCP servers above.
 
 ---
 
@@ -63,6 +64,7 @@ Both skills:
 | This skill repo | Compatible MCP servers |
 | --- | --- |
 | `v0.1.x` | `schwab-marketdata-mcp >=0.3,<0.4` + `sec-edgar-mcp >=0.2,<0.3` + `polygon-news-mcp >=0.2,<0.3` |
+| `v0.4.x` | `schwab-marketdata-mcp >=0.4,<0.5` + `sec-edgar-mcp >=0.4,<0.5` + `polygon-news-mcp >=0.2,<0.3` + `clickhouse-mcp >=0.1,<0.2` |
 
 The version ranges are encoded in each `SKILL.md`'s `mcp_dependencies`
 frontmatter. The activation handshake calls `health_check()` on every
@@ -129,6 +131,10 @@ This skill pack is the cross-MCP companion to:
   read-only SEC EDGAR MCP server (filings, Form 4 / Form 13F XBRL).
 - **[polygon-news-mcp](https://github.com/kevinkda/polygon-news-mcp)** —
   read-only Polygon news MCP server (ticker news, sentiment aggregate).
+- **[clickhouse-mcp](https://github.com/kevinkda/clickhouse-mcp)** —
+  read-only ClickHouse MCP server (7 tools over a 1.49B-row USA-market
+  warehouse: OHLCV, materialised indicators, full-market screen, correlation
+  matrix); powers the cross-MCP quant playbooks.
 
 The skill markdown design pattern is inspired by the
 [`schwab-marketdata-skill`](https://github.com/kevinkda/schwab-marketdata-skill)
