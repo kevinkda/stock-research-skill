@@ -17,7 +17,7 @@ jobs:
   markdownlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Run markdownlint-cli2
         uses: DavidAnson/markdownlint-cli2-action@v23
         with:
@@ -26,6 +26,6 @@ jobs:
   structure-check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Validate skill structure
         run: bash scripts/validate-structure.sh
